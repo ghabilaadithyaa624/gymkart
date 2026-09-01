@@ -1,13 +1,16 @@
 import { ArrowRight, BadgeCheck, Dumbbell, Flame, IndianRupee, Sparkles, Timer, Truck } from "lucide-react";
 import Link from "next/link";
+import FlashSaleTimer from "@/components/flash-sale-timer";
 import ProductCard from "@/components/product-card";
-import { CountdownTimer, SectionHead } from "@/components/ui";
+import { SectionHead } from "@/components/ui";
 import { getSessionUser } from "@/lib/auth";
 import { GOALS } from "@/lib/money";
 import { HERO_IMG } from "@/lib/seed-data";
 import { getBestsellers, getCategories, getFlashDeals, getGoalPicks, getUnder999, queryProducts } from "@/lib/shop";
 
 export const dynamic = "force-dynamic";
+
+const FLASH_SALE_TARGET = process.env.NEXT_PUBLIC_FLASH_SALE_TARGET ?? "2026-09-02T18:29:59.000Z";
 
 export default async function HomePage() {
   let user: Awaited<ReturnType<typeof getSessionUser>> = null;
@@ -144,9 +147,9 @@ export default async function HomePage() {
                   <p className="text-xs text-white/60">Timed discounts — when it's gone, it's gone.</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-chili/40 bg-chili/15 px-4 py-2 text-sm font-bold text-white">
-                <span className="text-chili">Ends in</span>
-                <CountdownTimer />
+              <div className="flex items-center gap-3 rounded-xl border border-chili/40 bg-chili/15 px-3 py-2 text-sm font-bold text-white sm:px-4">
+                <span className="hidden text-red-300 sm:inline">Ends in</span>
+                <FlashSaleTimer targetDate={FLASH_SALE_TARGET} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">

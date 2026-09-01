@@ -157,6 +157,7 @@ export async function categoryIdsForSlug(slug: string): Promise<number[]> {
 export type CatalogQuery = {
   categorySlug?: string;
   q?: string;
+  goal?: string;
   brands?: string[];
   minPrice?: number;
   maxPrice?: number;
@@ -184,6 +185,23 @@ export async function queryProducts(opts: CatalogQuery): Promise<{ items: Produc
     if (opts.q) {
       const like = `%${opts.q}%`;
       cond.push(or(ilike(products.name, like), ilike(products.brand, like), ilike(products.description, like)));
+    }
+    if (opts.goal === "home_gym") {
+      const equipmentIds = await categoryIdsForSlug("equipment");
+      cond.push(inArray(products.categoryId, equipmentIds));
+      cond.push(lte(PRICE_COL, 5000));
+    } else if (opts.goal === "budget_essentials") {
+      cond.push(lte(PRICE_COL, 999));
+    } else if (opts.goal) {
+      const goalAliases: Record<string, string> = {
+        bulking: "muscle_gain",
+        lean_muscle: "muscle_gain",
+        fat_loss: "weight_loss",
+        home_workout: "general_fitness",
+        endurance: "general_fitness",
+      };
+      const mappedGoal = goalAliases[opts.goal] ?? opts.goal;
+      cond.push(sql`${products.goals} @> ${JSON.stringify([mappedGoal])}::jsonb`);
     }
     if (opts.brands?.length) cond.push(inArray(products.brand, opts.brands));
     if (opts.minPrice != null) cond.push(gte(PRICE_COL, opts.minPrice));

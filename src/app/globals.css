@@ -20,6 +20,7 @@
   --animate-pop: pop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-urgent-pulse: urgent-pulse 1.2s ease-in-out infinite;
 }
 
 @keyframes toast-in {
@@ -38,6 +39,14 @@
 @keyframes fade-up {
   from { transform: translateY(16px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+@keyframes urgent-pulse {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 0 rgba(230, 57, 70, 0)); }
+  50% { opacity: 0.78; filter: drop-shadow(0 0 7px rgba(230, 57, 70, 0.45)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-urgent-pulse { animation: none !important; }
 }
 
 body {

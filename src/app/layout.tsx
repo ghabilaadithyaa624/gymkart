@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import MobileTabs from "@/components/mobile-tabs";
 import Footer from "@/components/footer";
+import InstallPwaBanner from "@/components/InstallPwaBanner";
 import { ToastHost } from "@/components/ui";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -14,6 +15,11 @@ export const metadata: Metadata = {
   title: "GymKart — Fitness Gear, Supplements & Gym Essentials Online in India",
   description:
     "India's smart marketplace for fitness gear, supplements and gym essentials. Bestseller badges, verified ratings, COD available, free delivery over ₹999.",
+  applicationName: "GymKart",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#1a1a1a",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "GymKart" },
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }], apple: "/apple-touch-icon.png" },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -24,6 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <div className="pb-20 lg:pb-0">{children}</div>
         <Footer />
         <MobileTabs />
+        <InstallPwaBanner />
         <ToastHost />
       </body>
     </html>

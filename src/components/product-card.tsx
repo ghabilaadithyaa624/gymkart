@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { formatCount } from "@/lib/money";
 import type { Product } from "@/lib/shop";
+import AuthenticityBadge from "./authenticity-badge";
 import { AddToCartButton, WishlistButton } from "./product-actions";
 import { BadgePill, Price, Stars } from "./ui";
 
@@ -13,6 +14,7 @@ export default function ProductCard({ product, priority }: { product: Product; p
   const [quick, setQuick] = useState(false);
   const out = product.stockQty <= 0;
   const hot = product.sold >= 1500;
+  const isSupplement = product.categoryId >= 21 && product.categoryId <= 23;
 
   return (
     <>
@@ -68,6 +70,7 @@ export default function ProductCard({ product, priority }: { product: Product; p
           <div className="flex flex-1 flex-col gap-1.5 p-3.5">
             <span className="text-[10.5px] font-bold tracking-widest text-mute uppercase">{product.brand}</span>
             <h3 className="line-clamp-2 text-sm leading-snug font-semibold text-ink">{product.name}</h3>
+            {isSupplement && <AuthenticityBadge compact />}
             <Stars rating={product.ratingAvg} count={product.ratingCount} />
             {hot && (
               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-flame-dark">
@@ -125,6 +128,7 @@ export default function ProductCard({ product, priority }: { product: Product; p
                 <div className="mt-2 flex items-center gap-3">
                   <Stars rating={product.ratingAvg} count={product.ratingCount} />
                 </div>
+                {isSupplement && <div className="mt-3"><AuthenticityBadge /></div>}
                 <p className="mt-2.5 line-clamp-2 text-sm text-mute">{product.description}</p>
                 <div className="mt-3.5">
                   <Price price={product.price} discountPrice={product.discountPrice} size="lg" />
