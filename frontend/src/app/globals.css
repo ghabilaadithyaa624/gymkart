@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+
+  --color-flame: #ff6b35;
+  --color-flame-dark: #e85a24;
+  --color-flame-tint: #fff1ea;
+  --color-ink: #1a1a1a;
+  --color-mute: #6b7280;
+  --color-line: #eaeaea;
+  --color-sand: #f6f6f7;
+  --color-leaf: #2ecc71;
+  --color-leaf-dark: #1e9e52;
+  --color-chili: #e63946;
+  --color-azure: #2563eb;
+
+  --animate-toast-in: toast-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes toast-in {
+  from { transform: translateY(14px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to { background-position: 400px 0; }
+}
+@keyframes fade-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+body {
+  background: var(--color-sand);
+  color: var(--color-ink);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background: rgba(255, 107, 53, 0.22);
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-flame px-5 py-3 font-display text-sm font-semibold text-white transition-all hover:bg-flame-dark hover:shadow-[0_10px_24px_rgba(255,107,53,0.35)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-5 py-3 font-display text-sm font-semibold text-ink transition-colors hover:border-flame hover:text-flame active:scale-[0.98];
+  }
+  .card {
+    @apply rounded-xl border border-line bg-white;
+  }
+  .input {
+    @apply w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink transition-colors outline-none placeholder:text-mute/70 focus:border-flame focus:ring-2 focus:ring-flame/15;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f1 25%, #fafafa 50%, #f0f0f1 75%);
+    background-size: 800px 100%;
+    animation: var(--animate-shimmer);
+    @apply rounded-lg;
+  }
+}
+
+.scroll-x {
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+.scroll-x::-webkit-scrollbar {
+  display: none;
+}
+.scroll-x > * {
+  scroll-snap-align: start;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
