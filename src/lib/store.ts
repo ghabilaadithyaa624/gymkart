@@ -29,7 +29,7 @@ type State = {
   bootstrap: () => Promise<void>;
   afterAuth: (u: GKUser) => Promise<void>;
   logout: () => Promise<void>;
-  addToCart: (productId: string, qty?: number) => Promise<void>;
+  addToCart: (productId: string, qty?: number, options?: { silent?: boolean }) => Promise<void>;
   setGuestQty: (productId: string, qty: number) => void;
   clearGuestCart: () => void;
   refreshCounts: () => Promise<void>;
@@ -110,7 +110,7 @@ export const useGK = create<State>()(
 
       setWishlistIds: (ids) => set({ wishlistIds: ids }),
 
-      addToCart: async (productId, qty = 1) => {
+      addToCart: async (productId, qty = 1, options) => {
         const s = get();
         if (!s.user) {
           const cur = s.guestCart.find((g) => g.productId === productId);
@@ -119,7 +119,7 @@ export const useGK = create<State>()(
               ? st.guestCart.map((g) => (g.productId === productId ? { ...g, qty: Math.min(g.qty + qty, 10) } : g))
               : [...st.guestCart, { productId, qty }],
           }));
-          s.toast({ title: "Added to cart", desc: "Sign in at checkout to save your cart.", href: "/cart", hrefLabel: "View cart", tone: "ok" });
+          if (!options?.silent) s.toast({ title: "Added to cart", desc: "Sign in at checkout to save your cart.", href: "/cart", hrefLabel: "View cart", tone: "ok" });
           return;
         }
         try {
@@ -130,11 +130,11 @@ export const useGK = create<State>()(
           });
           if (res.status === 401) {
             set({ user: null });
-            return get().addToCart(productId, qty);
+            return get().addToCart(productId, qty, options);
           }
           const { items } = await res.json();
           set({ serverCartCount: items.reduce((a: number, l: { quantity: number }) => a + l.quantity, 0) });
-          get().toast({ title: "Added to cart", href: "/cart", hrefLabel: "View cart", tone: "ok" });
+          if (!options?.silent) get().toast({ title: "Added to cart", href: "/cart", hrefLabel: "View cart", tone: "ok" });
         } catch {
           get().toast({ title: "Network error", desc: "Couldn't reach the server. Try again.", tone: "warn" });
         }

@@ -1,7 +1,8 @@
 import { SearchX } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 import FilterPanel, { SortSelect } from "./filter-panel";
-import GoalFilters from "./goal-filters";
+import GoalFilterBar from "./goal-filter-bar";
 import ProductCard from "./product-card";
 import { getCategories, queryProducts, type Product } from "@/lib/shop";
 
@@ -76,7 +77,11 @@ export default async function CatalogView({
         {!activeRoot && q == null && <span className="font-semibold text-ink">All Products</span>}
       </nav>
 
-      {!categorySlug && q == null && <GoalFilters activeGoal={str("goal")} />}
+      {!categorySlug && q == null && (
+        <Suspense fallback={<div className="mb-6 h-[76px] animate-pulse rounded-2xl bg-ink" />}>
+          <GoalFilterBar />
+        </Suspense>
+      )}
 
       <div className="flex gap-8">
         <FilterPanel

@@ -2,9 +2,9 @@ import { BadgeCheck, Flame, IndianRupee, MapPin, RotateCcw, ShieldCheck, Star, T
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AuthenticityBadge from "@/components/authenticity-badge";
+import BundleCard from "@/components/bundle-card";
 import ProductCard from "@/components/product-card";
 import { BuyBox, Gallery, PdpActions, ReviewForm, StickyMobileBar } from "@/components/pdp";
-import StackBuilder from "@/components/stack-builder";
 import { BadgePill, Price, SectionHead, Stars } from "@/components/ui";
 import { getSessionUser } from "@/lib/auth";
 import { formatCount, formatDate, GOALS } from "@/lib/money";
@@ -112,7 +112,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <BuyBox product={product} />
           </div>
 
-          <StackBuilder products={bundleProducts} />
+          <BundleCard products={bundleProducts} />
 
           {/* Delivery card */}
           <div className="card mt-6 space-y-3 p-4.5 sm:p-5">
