@@ -70,8 +70,8 @@ export default function ProductCard({ product, priority }: { product: Product; p
           <div className="flex flex-1 flex-col gap-1.5 p-3.5">
             <span className="text-[10.5px] font-bold tracking-widest text-mute uppercase">{product.brand}</span>
             <h3 className="line-clamp-2 text-sm leading-snug font-semibold text-ink">{product.name}</h3>
-            <Stars rating={product.ratingAvg} count={product.ratingCount} />
             {isSupplement && <AuthenticityBadge compact />}
+            <Stars rating={product.ratingAvg} count={product.ratingCount} />
             {hot && (
               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-flame-dark">
                 <Flame size={11} /> {formatCount(product.sold)} bought this month

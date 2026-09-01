@@ -77,6 +77,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <div>
               <span className="text-xs font-bold tracking-[0.16em] text-mute uppercase">{product.brand}</span>
               <h1 className="mt-1.5 font-display text-xl leading-snug font-bold sm:text-2xl lg:text-[28px]">{product.name}</h1>
+              {isSupplement && <div className="mt-3"><AuthenticityBadge /></div>}
             </div>
             <PdpActions productId={product.id} />
           </div>
@@ -105,8 +106,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <Price price={product.price} discountPrice={product.discountPrice} size="lg" />
             <p className="mt-1 text-xs text-mute">Inclusive of all taxes</p>
           </div>
-
-          {isSupplement && <div className="mt-4"><AuthenticityBadge /></div>}
 
           <div className="mt-5">
             <BuyBox product={product} />
