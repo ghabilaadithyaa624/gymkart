@@ -1,12 +1,14 @@
 import { BadgeCheck, Flame, IndianRupee, MapPin, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AuthenticityBadge from "@/components/authenticity-badge";
 import ProductCard from "@/components/product-card";
 import { BuyBox, Gallery, PdpActions, ReviewForm, StickyMobileBar } from "@/components/pdp";
+import StackBuilder from "@/components/stack-builder";
 import { BadgePill, Price, SectionHead, Stars } from "@/components/ui";
 import { getSessionUser } from "@/lib/auth";
 import { formatCount, formatDate, GOALS } from "@/lib/money";
-import { canReview, getCategories, getProductById, getRelatedProducts, getReviews } from "@/lib/shop";
+import { canReview, getCategories, getProductById, getRelatedProducts, getReviews, queryProducts } from "@/lib/shop";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +26,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const product = await getProductById(id);
   if (!product) notFound();
 
-  const [cats, reviews, related, user] = await Promise.all([
+  const [cats, reviews, related, user, shakerResult, creatineResult] = await Promise.all([
     getCategories(),
     getReviews(product.id),
     getRelatedProducts(product),
     getSessionUser(),
+    queryProducts({ q: "shaker", sort: "rating", limit: 1 }),
+    queryProducts({ q: "creatine", sort: "rating", limit: 1 }),
   ]);
   const cat = cats.find((c) => c.id === product.categoryId);
   const rootCat = cat?.parentId ? cats.find((c) => c.id === cat.parentId) : cat;
@@ -39,6 +43,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const goalLabel = goalMatch
     ? (Object.values(GOALS) as readonly { key: string; label: string }[]).find((g) => g.key === user!.fitnessGoal)?.label
     : undefined;
+  const isSupplement = product.categoryId >= 21 && product.categoryId <= 23;
+  const bundleProducts = [product, ...shakerResult.items, ...creatineResult.items, ...related]
+    .filter((item, index, list) => list.findIndex((candidate) => candidate.id === item.id) === index)
+    .slice(0, 3);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 pb-32 sm:px-6 lg:py-8 lg:pb-10">
@@ -98,9 +106,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <p className="mt-1 text-xs text-mute">Inclusive of all taxes</p>
           </div>
 
+          {isSupplement && <div className="mt-4"><AuthenticityBadge /></div>}
+
           <div className="mt-5">
             <BuyBox product={product} />
           </div>
+
+          <StackBuilder products={bundleProducts} />
 
           {/* Delivery card */}
           <div className="card mt-6 space-y-3 p-4.5 sm:p-5">
