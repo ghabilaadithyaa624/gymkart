@@ -5,7 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import MobileTabs from "@/components/mobile-tabs";
 import Footer from "@/components/footer";
-import InstallAppPrompt from "@/components/install-app-prompt";
+import InstallPwaBanner from "@/components/InstallPwaBanner";
 import { ToastHost } from "@/components/ui";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <div className="pb-20 lg:pb-0">{children}</div>
         <Footer />
         <MobileTabs />
-        <InstallAppPrompt />
+        <InstallPwaBanner />
         <ToastHost />
       </body>
     </html>
