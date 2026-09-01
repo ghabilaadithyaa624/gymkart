@@ -18,11 +18,11 @@ export const pool =
   new Pool({
     connectionString: databaseUrl,
     ssl: isLocalhost ? false : { rejectUnauthorized: false },
+    max: 10,
+    connectionTimeoutMillis: 10000,
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__arenaNextJsPostgresqlPool = pool;
-}
+globalForDb.__arenaNextJsPostgresqlPool = pool;
 
 export const db = drizzle(pool);
 
