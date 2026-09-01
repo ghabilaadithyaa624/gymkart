@@ -10,6 +10,8 @@ import { getBestsellers, getCategories, getFlashDeals, getGoalPicks, getUnder999
 
 export const dynamic = "force-dynamic";
 
+const FLASH_SALE_TARGET = process.env.NEXT_PUBLIC_FLASH_SALE_TARGET ?? "2026-09-02T18:29:59.000Z";
+
 export default async function HomePage() {
   let user: Awaited<ReturnType<typeof getSessionUser>> = null;
   try {
@@ -147,7 +149,7 @@ export default async function HomePage() {
               </div>
               <div className="flex items-center gap-3 rounded-xl border border-chili/40 bg-chili/15 px-3 py-2 text-sm font-bold text-white sm:px-4">
                 <span className="hidden text-red-300 sm:inline">Ends in</span>
-                <FlashSaleTimer />
+                <FlashSaleTimer targetDate={FLASH_SALE_TARGET} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
