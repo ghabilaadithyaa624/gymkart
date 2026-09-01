@@ -138,8 +138,13 @@ export async function ensureSeeded() {
 /* ------------------------------------------------------------------ */
 
 export async function getCategories(): Promise<Category[]> {
-  await ensureSeeded();
-  return db.select().from(categories).orderBy(categories.sortOrder);
+  try {
+    await ensureSeeded();
+    return await db.select().from(categories).orderBy(categories.sortOrder);
+  } catch (err) {
+    console.error("getCategories error:", err);
+    return [];
+  }
 }
 
 export async function categoryIdsForSlug(slug: string): Promise<number[]> {
@@ -164,96 +169,134 @@ export type CatalogQuery = {
 const PRICE_COL = sql`coalesce(${products.discountPrice}, ${products.price})`;
 
 export async function queryProducts(opts: CatalogQuery): Promise<{ items: Product[]; total: number; brands: string[] }> {
-  await ensureSeeded();
-  const cond = [];
+  try {
+    await ensureSeeded();
+    const cond = [];
 
-  if (opts.ids?.length) {
-    cond.push(inArray(products.id, opts.ids));
+    if (opts.ids?.length) {
+      cond.push(inArray(products.id, opts.ids));
+    }
+    if (opts.categorySlug) {
+      const ids = await categoryIdsForSlug(opts.categorySlug);
+      if (ids.length === 0) return { items: [], total: 0, brands: await getBrands() };
+      cond.push(inArray(products.categoryId, ids));
+    }
+    if (opts.q) {
+      const like = `%${opts.q}%`;
+      cond.push(or(ilike(products.name, like), ilike(products.brand, like), ilike(products.description, like)));
+    }
+    if (opts.brands?.length) cond.push(inArray(products.brand, opts.brands));
+    if (opts.minPrice != null) cond.push(gte(PRICE_COL, opts.minPrice));
+    if (opts.maxPrice != null) cond.push(lte(PRICE_COL, opts.maxPrice));
+    if (opts.minRating != null) cond.push(gte(products.ratingAvg, opts.minRating));
+
+    const where = cond.length ? and(...cond) : undefined;
+
+    const order =
+      opts.sort === "price_low"
+        ? [asc(PRICE_COL)]
+        : opts.sort === "price_high"
+          ? [desc(PRICE_COL)]
+          : opts.sort === "newest"
+            ? [desc(products.createdAt)]
+            : opts.sort === "rating"
+              ? [desc(products.ratingAvg)]
+              : [desc(products.sold)]; // bestseller default
+
+    const [items, countRows, brandRows] = await Promise.all([
+      db.select().from(products).where(where).orderBy(...order).limit(opts.limit ?? 200),
+      db.select({ n: sql<number>`count(*)::int` }).from(products).where(where),
+      getBrands(),
+    ]);
+    return { items, total: countRows[0]?.n ?? 0, brands: brandRows };
+  } catch (err) {
+    console.error("queryProducts error:", err);
+    return { items: [], total: 0, brands: [] };
   }
-  if (opts.categorySlug) {
-    const ids = await categoryIdsForSlug(opts.categorySlug);
-    if (ids.length === 0) return { items: [], total: 0, brands: await getBrands() };
-    cond.push(inArray(products.categoryId, ids));
-  }
-  if (opts.q) {
-    const like = `%${opts.q}%`;
-    cond.push(or(ilike(products.name, like), ilike(products.brand, like), ilike(products.description, like)));
-  }
-  if (opts.brands?.length) cond.push(inArray(products.brand, opts.brands));
-  if (opts.minPrice != null) cond.push(gte(PRICE_COL, opts.minPrice));
-  if (opts.maxPrice != null) cond.push(lte(PRICE_COL, opts.maxPrice));
-  if (opts.minRating != null) cond.push(gte(products.ratingAvg, opts.minRating));
-
-  const where = cond.length ? and(...cond) : undefined;
-
-  const order =
-    opts.sort === "price_low"
-      ? [asc(PRICE_COL)]
-      : opts.sort === "price_high"
-        ? [desc(PRICE_COL)]
-        : opts.sort === "newest"
-          ? [desc(products.createdAt)]
-          : opts.sort === "rating"
-            ? [desc(products.ratingAvg)]
-            : [desc(products.sold)]; // bestseller default
-
-  const [items, countRows, brandRows] = await Promise.all([
-    db.select().from(products).where(where).orderBy(...order).limit(opts.limit ?? 200),
-    db.select({ n: sql<number>`count(*)::int` }).from(products).where(where),
-    getBrands(),
-  ]);
-  return { items, total: countRows[0]?.n ?? 0, brands: brandRows };
 }
 
 export async function getBrands(): Promise<string[]> {
-  const rows = await db.selectDistinct({ brand: products.brand }).from(products).orderBy(products.brand);
-  return rows.map((r) => r.brand);
+  try {
+    const rows = await db.selectDistinct({ brand: products.brand }).from(products).orderBy(products.brand);
+    return rows.map((r) => r.brand);
+  } catch {
+    return [];
+  }
 }
 
 export async function getProductById(id: string) {
-  await ensureSeeded();
-  const rows = await db.select().from(products).where(eq(products.id, id)).limit(1);
-  return rows[0] ?? null;
+  try {
+    await ensureSeeded();
+    const rows = await db.select().from(products).where(eq(products.id, id)).limit(1);
+    return rows[0] ?? null;
+  } catch (err) {
+    console.error("getProductById error:", err);
+    return null;
+  }
 }
 
 export async function getRelatedProducts(product: Product, limit = 4) {
-  const rows = await db
-    .select()
-    .from(products)
-    .where(and(eq(products.categoryId, product.categoryId), sql`${products.id} != ${product.id}`))
-    .orderBy(desc(products.ratingAvg))
-    .limit(limit);
-  return rows;
+  try {
+    const rows = await db
+      .select()
+      .from(products)
+      .where(and(eq(products.categoryId, product.categoryId), sql`${products.id} != ${product.id}`))
+      .orderBy(desc(products.ratingAvg))
+      .limit(limit);
+    return rows;
+  } catch {
+    return [];
+  }
 }
 
 export async function getBestsellers(limit = 8) {
-  await ensureSeeded();
-  return db.select().from(products).orderBy(desc(products.sold)).limit(limit);
+  try {
+    await ensureSeeded();
+    return await db.select().from(products).orderBy(desc(products.sold)).limit(limit);
+  } catch (err) {
+    console.error("getBestsellers error:", err);
+    return [];
+  }
 }
 
 export async function getFlashDeals(limit = 4) {
-  await ensureSeeded();
-  return db
-    .select()
-    .from(products)
-    .where(sql`${products.badgeTags} @> '["flash"]'::jsonb`)
-    .orderBy(desc(products.sold))
-    .limit(limit);
+  try {
+    await ensureSeeded();
+    return await db
+      .select()
+      .from(products)
+      .where(sql`${products.badgeTags} @> '["flash"]'::jsonb`)
+      .orderBy(desc(products.sold))
+      .limit(limit);
+  } catch (err) {
+    console.error("getFlashDeals error:", err);
+    return [];
+  }
 }
 
 export async function getUnder999(limit = 8) {
-  await ensureSeeded();
-  return db.select().from(products).where(lte(PRICE_COL, 999)).orderBy(desc(products.sold)).limit(limit);
+  try {
+    await ensureSeeded();
+    return await db.select().from(products).where(lte(PRICE_COL, 999)).orderBy(desc(products.sold)).limit(limit);
+  } catch (err) {
+    console.error("getUnder999 error:", err);
+    return [];
+  }
 }
 
 export async function getGoalPicks(goal: string, limit = 8) {
-  await ensureSeeded();
-  return db
-    .select()
-    .from(products)
-    .where(sql`${products.goals} @> ${JSON.stringify([goal])}::jsonb`)
-    .orderBy(desc(products.ratingAvg))
-    .limit(limit);
+  try {
+    await ensureSeeded();
+    return await db
+      .select()
+      .from(products)
+      .where(sql`${products.goals} @> ${JSON.stringify([goal])}::jsonb`)
+      .orderBy(desc(products.ratingAvg))
+      .limit(limit);
+  } catch (err) {
+    console.error("getGoalPicks error:", err);
+    return [];
+  }
 }
 
 /* ------------------------------------------------------------------ */

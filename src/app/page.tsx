@@ -10,17 +10,42 @@ import { getBestsellers, getCategories, getFlashDeals, getGoalPicks, getUnder999
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const user = await getSessionUser();
-  const [cats, bestsellers, flash, under999] = await Promise.all([
-    getCategories(),
-    getBestsellers(10),
-    getFlashDeals(4),
-    getUnder999(8),
+  let user: Awaited<ReturnType<typeof getSessionUser>> = null;
+  try {
+    user = await getSessionUser();
+  } catch (err) {
+    console.error("Session user fetch error:", err);
+  }
+
+  const [cats, bestsellers, flash, under999, starterKit] = await Promise.all([
+    getCategories().catch((err) => {
+      console.error("getCategories error:", err);
+      return [];
+    }),
+    getBestsellers(10).catch((err) => {
+      console.error("getBestsellers error:", err);
+      return [];
+    }),
+    getFlashDeals(4).catch((err) => {
+      console.error("getFlashDeals error:", err);
+      return [];
+    }),
+    getUnder999(8).catch((err) => {
+      console.error("getUnder999 error:", err);
+      return [];
+    }),
+    queryProducts({ categorySlug: "equipment", sort: "rating", limit: 8 }).catch((err) => {
+      console.error("starterKit error:", err);
+      return { items: [], total: 0, brands: [] };
+    }),
   ]);
+
   const roots = cats.filter((c) => !c.parentId);
-  const starterKit = await queryProducts({ categorySlug: "equipment", sort: "rating", limit: 8 });
-  const goalPicks = user?.fitnessGoal ? await getGoalPicks(user.fitnessGoal, 8) : [];
+  const goalPicks = user?.fitnessGoal
+    ? await getGoalPicks(user.fitnessGoal, 8).catch(() => [])
+    : [];
   const goalLabel = GOALS.find((g) => g.key === user?.fitnessGoal)?.label;
+
 
   return (
     <main>
