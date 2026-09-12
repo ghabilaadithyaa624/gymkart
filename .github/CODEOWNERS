@@ -1,0 +1,23 @@
+# CODEOWNERS
+
+# This file declares who is responsible for code reviews in different parts of the repository.
+# GitHub will automatically request reviews from these users when a PR modifies matching files.
+
+# Default owners for the entire repository
+* @gymkart-team
+
+# Backend specific ownership
+/backend/** @backend-team
+
+# Frontend specific ownership
+/frontend/** @frontend-team
+
+# Database schema changes require extra review
+/drizzle.config.ts @backend-team
+/backend/src/db/** @backend-team
+
+# Configuration files
+/.github/** @gymkart-team
+/package.json @gymkart-team
+/tsconfig.json @gymkart-team
+/eslint.config.mjs @gymkart-team
